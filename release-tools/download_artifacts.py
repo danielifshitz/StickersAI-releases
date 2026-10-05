@@ -15,11 +15,11 @@ run = json.loads(result.stdout)
 if run['status'] != 'completed' or run['conclusion'] != 'success' or run['event'] != 'push' or run['head_branch'] != 'v' + version or run['path'] != '.github/workflows/desktop.yml':
     raise SystemExit('Only a successful tagged Desktop packages workflow can be published')
 artifacts = json.loads(subprocess.run(['gh', 'api', f'repos/{repo}/actions/runs/{run_id}/artifacts?per_page=100'], capture_output=True, check=True, text=True).stdout)['artifacts']
-expected = ('desktop-macos-14-arm64', 'desktop-macos-15-intel-x64', 'desktop-windows-2025-x64')
+expected = ('desktop-macos-14-arm64', 'desktop-windows-2025-x64')
 for name in expected:
     matches = [a for a in artifacts if a['name'] == name and not a['expired']]
     if len(matches) != 1:
-        raise SystemExit('All three unexpired native artifacts are required')
+        raise SystemExit('All supported unexpired native artifacts are required')
     destination = Path('artifacts') / name
     subprocess.run(['gh', 'run', 'download', run_id, '--repo', repo, '--name', name, '--dir', str(destination)], check=True)
-print('Downloaded all three tested native targets for', version)
+print('Downloaded all supported tested native targets for', version)

@@ -11,7 +11,7 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
 REPOSITORY = 'danielifshitz/StickersAI-releases'
-TARGETS = ('darwin-arm64', 'darwin-x64', 'win32-x64')
+TARGETS = ('darwin-arm64', 'win32-x64')
 ROOT = Path(__file__).resolve().parent
 
 
@@ -67,7 +67,7 @@ def sign(folder, destination, key_pem, expected_public_key):
             if len(candidates) != 1 or candidates[0].stat().st_size != artifact['bytes'] or digest(candidates[0]) != artifact['sha256']:
                 raise ValueError('Release artifact does not match its tested inventory')
     if set(targets) != set(TARGETS):
-        raise ValueError('All three native targets must pass before signing a public release')
+        raise ValueError('All supported native targets must pass before signing a public release')
     destination.mkdir(parents=True, exist_ok=True)
     raw = (json.dumps({'format': 1, 'repository': REPOSITORY, 'version': release_version, 'targets': targets}, sort_keys=True, separators=(',', ':')) + '\n').encode()
     (destination / 'update-manifest.json').write_bytes(raw)
