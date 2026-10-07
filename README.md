@@ -6,6 +6,8 @@ This public repository hosts official installers, verified updates and release t
 
 Version [0.4.2](https://github.com/danielifshitz/StickersAI-releases/releases/tag/v0.4.2) is the latest stable release for macOS Apple Silicon and Windows x64. Both native builds passed CI. [The protected publisher](https://github.com/danielifshitz/StickersAI-releases/actions/runs/37383701840) was approved, and signatures/package metadata were independently verified before publication. Real public-feed updates committed on the Mac and repaired Windows preview, preserving workspace and Codex configuration; bundled SAM/image/PDF checks passed on both. Clean-machine, OS-reboot and fully offline reopening acceptance remain outstanding. Version [0.4.1](https://github.com/danielifshitz/StickersAI-releases/releases/tag/v0.4.1) remains a validation prerelease.
 
+**Clean Mac installation is currently blocked:** on 2026-10-07, a fresh macOS 26.6.2 Apple Silicon VM downloaded the public 0.4.2 DMG in Safari and copied the app into Applications, but macOS refused first launch as “damaged”. A matching public download confirmed an incomplete application code/resource signature. Update-manifest authentication still passed; it does not establish macOS bundle integrity. The source now applies a complete local integrity signature even without paid certificates, and verifies the actual DMG and ZIP contents. A corrected new release and clean first-launch acceptance are required. Published 0.4.2 artifacts and tags remain unchanged; do not remove quarantine or disable OS protections to work around this failure.
+
 ## Installation and updates
 
 Download installers from [the latest stable release](https://github.com/danielifshitz/StickersAI-releases/releases/latest).
