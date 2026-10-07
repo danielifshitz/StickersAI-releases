@@ -4,11 +4,11 @@ This public repository hosts official installers, verified updates and release t
 
 ## Current release status
 
-Version [0.4.1](https://github.com/danielifshitz/StickersAI-releases/releases/tag/v0.4.1) is a validation prerelease. The corrected 0.4.2 Mac Apple Silicon and Windows x64 builds passed native CI. [Its protected publisher](https://github.com/danielifshitz/StickersAI-releases/actions/runs/37383701840) was approved and completed successfully on 2026-10-07; the manifest signature and uploaded package digests were independently verified. Version 0.4.2 remains a draft because GitHub returns server errors during publication. Native CI does not establish clean-machine or real public-feed update acceptance.
+Version [0.4.2](https://github.com/danielifshitz/StickersAI-releases/releases/tag/v0.4.2) is the latest stable release for macOS Apple Silicon and Windows x64. Both native builds passed CI. [The protected publisher](https://github.com/danielifshitz/StickersAI-releases/actions/runs/37383701840) was approved, and signatures/package metadata were independently verified before publication. Real public-feed updates committed on the Mac and repaired Windows preview, preserving workspace and Codex configuration; bundled SAM/image/PDF checks passed on both. Clean-machine, OS-reboot and fully offline reopening acceptance remain outstanding. Version [0.4.1](https://github.com/danielifshitz/StickersAI-releases/releases/tag/v0.4.1) remains a validation prerelease.
 
 ## Installation and updates
 
-Once a stable release is published, download its installer from [Releases](https://github.com/danielifshitz/StickersAI-releases/releases).
+Download installers from [the latest stable release](https://github.com/danielifshitz/StickersAI-releases/releases/latest).
 
 - **Mac:** open the DMG and copy StickersAI to a writable Applications folder.
 - **Windows:** run StickersAI Setup. Installed binaries use `%LOCALAPPDATA%\StickersAIDesktop`; your persistent workspace uses `%LOCALAPPDATA%\StickersAI`.
