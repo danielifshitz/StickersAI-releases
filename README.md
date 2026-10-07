@@ -4,7 +4,7 @@ This public repository hosts official installers, verified updates and release t
 
 ## Current release status
 
-Version [0.4.1](https://github.com/danielifshitz/StickersAI-releases/releases/tag/v0.4.1) is a validation prerelease. The corrected 0.4.2 Mac Apple Silicon and Windows x64 builds passed native CI; [its protected publisher](https://github.com/danielifshitz/StickersAI-releases/actions/runs/37383701840) is awaiting human approval. Version 0.4.2 has not been published yet. Native CI does not establish clean-machine or real public-feed update acceptance.
+Version [0.4.1](https://github.com/danielifshitz/StickersAI-releases/releases/tag/v0.4.1) is a validation prerelease. The corrected 0.4.2 Mac Apple Silicon and Windows x64 builds passed native CI. [Its protected publisher](https://github.com/danielifshitz/StickersAI-releases/actions/runs/37383701840) was approved and completed successfully on 2026-10-07; the manifest signature and uploaded package digests were independently verified. Version 0.4.2 remains a draft because GitHub returns server errors during publication. Native CI does not establish clean-machine or real public-feed update acceptance.
 
 ## Installation and updates
 
