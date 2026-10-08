@@ -120,10 +120,13 @@ def inventory_check(files, version, target):
     else:
         if len([name for name in files if name.endswith('.exe')]) != 1:
             raise ValueError('Exactly one Windows installer is required')
-        metadata = files['RELEASES'].read_text().strip().splitlines()
+        metadata = files['RELEASES'].read_text(encoding='utf-8-sig').strip().splitlines()
         with files[package].open('rb') as stream:
             sha1 = hashlib.file_digest(stream, 'sha1').hexdigest()
-        if metadata != [f"{sha1} {package} {files[package].stat().st_size}"]:
+        fields = metadata[0].split() if len(metadata) == 1 else []
+        if (len(fields) != 3 or not re.fullmatch(r'[a-fA-F0-9]{40}', fields[0])
+                or fields[0].lower() != sha1 or fields[1] != package
+                or fields[2] != str(files[package].stat().st_size)):
             raise ValueError('Squirrel RELEASES does not match the full package')
     return value
 
