@@ -45,13 +45,30 @@ def inventory(folder, target, version):
     return value
 
 
-def sign(folder, destination, key_pem, expected_public_key):
+def sign(folder, destination, key_pem, expected_public_key, *, expected_version=None, provenance=None):
     key = serialization.load_pem_private_key(key_pem, password=None)
     if not isinstance(key, Ed25519PrivateKey):
         raise ValueError('Release signing requires an Ed25519 key')
     public = key.public_key().public_bytes(serialization.Encoding.PEM, serialization.PublicFormat.SubjectPublicKeyInfo)
     if public != expected_public_key:
         raise ValueError('Release private key does not match the embedded verification key')
+    if provenance is not None:
+        record = json.loads(provenance.read_bytes())
+        if (record.get('format') != 1 or record.get('version') != expected_version
+                or record.get('nativeValidation') != 'passed'
+                or set(record.get('targets', {})) != set(TARGETS)):
+            raise ValueError('Invalid verified release provenance')
+        for target in TARGETS:
+            child = folder / target
+            expected_files = record['targets'][target]['files']
+            if {p.name for p in child.iterdir()} != {a['name'] for a in expected_files}:
+                raise ValueError('Release files changed after verified download')
+            for artifact in expected_files:
+                name = artifact['name']
+                file = child / name
+                if (Path(name).name != name or file.is_symlink() or not file.is_file()
+                        or file.stat().st_size != artifact['bytes'] or digest(file) != artifact['sha256']):
+                    raise ValueError('Release files changed after verified download')
     targets, release_version = {}, None
     for file in folder.rglob('update-target-*.json'):
         value = json.loads(file.read_text())
@@ -68,7 +85,11 @@ def sign(folder, destination, key_pem, expected_public_key):
                 raise ValueError('Release artifact does not match its tested inventory')
     if set(targets) != set(TARGETS):
         raise ValueError('All supported native targets must pass before signing a public release')
-    destination.mkdir(parents=True, exist_ok=True)
+    if expected_version is not None and release_version != expected_version:
+        raise ValueError('Requested version does not match tested artifacts')
+    if destination.exists():
+        raise ValueError('Release destination already exists; never overwrite signed assets')
+    destination.mkdir(parents=True)
     raw = (json.dumps({'format': 1, 'repository': REPOSITORY, 'version': release_version, 'targets': targets}, sort_keys=True, separators=(',', ':')) + '\n').encode()
     (destination / 'update-manifest.json').write_bytes(raw)
     (destination / 'update-manifest.sig').write_bytes(key.sign(raw))
@@ -87,14 +108,16 @@ def main():
     parser.add_argument('--folder', type=Path, required=True)
     parser.add_argument('--target', choices=TARGETS)
     parser.add_argument('--destination', type=Path)
+    parser.add_argument('--provenance', type=Path)
     args = parser.parse_args()
     if args.command == 'inventory':
         version = json.loads((ROOT / 'package.json').read_text())['version']
         inventory(args.folder, args.target, version)
     else:
         key = os.environ.pop('STICKERSAI_UPDATE_PRIVATE_KEY').encode()
-        release_version = sign(args.folder, args.destination, key, (ROOT / 'update/public-key.pem').read_bytes())
         expected = os.environ.get('STICKERSAI_RELEASE_VERSION')
+        release_version = sign(args.folder, args.destination, key, (ROOT / 'update/public-key.pem').read_bytes(),
+                               expected_version=expected, provenance=args.provenance)
         if expected and expected != release_version:
             raise ValueError('Requested version does not match tested artifacts')
         tag = os.environ.get('GITHUB_REF_NAME') if not expected else 'v' + expected

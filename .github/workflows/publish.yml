@@ -7,11 +7,14 @@ on:
         required: true
         type: string
       source_run_id:
-        description: 'Successful v-tag Desktop packages run ID in the private source repository'
+        description: 'Successful two-target self-hosted v-tag Desktop packages run ID'
         required: true
         type: string
 permissions:
   contents: read
+concurrency:
+  group: stickersai-publisher
+  cancel-in-progress: false
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -24,7 +27,12 @@ jobs:
         with:
           python-version: '3.12'
       - run: python -m pip install 'cryptography>=44,<48'
-      - name: Fetch tested native artifacts
+      - name: Refuse replacement of existing public versions
+        env:
+          GH_TOKEN: ${{ github.token }}
+          STICKERSAI_RELEASE_VERSION: ${{ inputs.version }}
+        run: python release-tools/check_public_version.py
+      - name: Fetch verified private release assets and approved notes
         env:
           GH_TOKEN: ${{ secrets.STICKERSAI_SOURCE_ARTIFACTS_TOKEN }}
           STICKERSAI_SOURCE_RUN_ID: ${{ inputs.source_run_id }}
@@ -34,11 +42,15 @@ jobs:
         env:
           STICKERSAI_UPDATE_PRIVATE_KEY: ${{ secrets.STICKERSAI_UPDATE_PRIVATE_KEY }}
           STICKERSAI_RELEASE_VERSION: ${{ inputs.version }}
-        run: python release-tools/update_release.py sign --folder artifacts --destination release-assets
+        run: python release-tools/update_release.py sign --folder artifacts --destination release-assets --provenance release-provenance.json
       - name: Create draft release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ inputs.version }}
           draft: true
-          files: release-assets/*
-          body: 'StickersAI installers and verified updates. Publish after clean-machine acceptance on every target. OS publisher signing is optional; security prompts may remain.'
+          fail_on_unmatched_files: true
+          overwrite_files: false
+          files: |
+            release-assets/*
+            release-provenance.json
+          body_path: release-notes.md
