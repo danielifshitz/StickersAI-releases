@@ -22,7 +22,8 @@ GATES = (
 VERSION = re.compile(r'(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)\Z')
 SHA = re.compile(r'[0-9a-f]{40}\Z')
 HASH = re.compile(r'[0-9a-f]{64}\Z')
-NAME = re.compile(r'[A-Za-z0-9][A-Za-z0-9._-]{0,150}\Z')
+# Forge's Windows installer includes one literal space. Keep all other names strict.
+NAME = re.compile(r'(?:[A-Za-z0-9][A-Za-z0-9._-]{0,150}|StickersAI-(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*) Setup\.exe)\Z')
 
 
 def digest(file):
