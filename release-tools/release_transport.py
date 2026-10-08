@@ -13,7 +13,7 @@ SOURCE = 'danielifshitz/StickersAI'
 TARGETS = ('darwin-arm64', 'win32-x64')
 MAX_ASSET = 2 * 1024**3  # GitHub requires each asset to be strictly smaller.
 GATES = (
-    'Validate release version', 'Build account and disk preflight',
+    'Validate release version', 'Build account and disk preflight', 'Create isolated Python environment',
     'Frontend tests', 'Frontend typecheck', 'Build desktop editor', 'Build MCP editor',
     'Native tests', 'Backend tests', 'Freeze runtime and run real SAM/PDF release gate',
     'Packaged service smoke test', 'STDIO bridge integration test', 'Build installers',
