@@ -1,0 +1,44 @@
+name: Diagnose private release access
+on:
+  workflow_dispatch:
+    inputs:
+      release_ids:
+        description: 'Expected private draft release IDs, separated by spaces'
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    environment: stickersai-updates
+    steps:
+      - name: Check protected source token without downloading or signing
+        env:
+          GH_TOKEN: ${{ secrets.STICKERSAI_SOURCE_ARTIFACTS_TOKEN }}
+          RELEASE_IDS: ${{ inputs.release_ids }}
+        run: |
+          python3 - <<'PY'
+          import json, os, re, subprocess
+          ids = os.environ['RELEASE_IDS'].split()
+          if not 1 <= len(ids) <= 4 or any(not re.fullmatch(r'[1-9][0-9]{0,19}', value) for value in ids):
+              raise SystemExit('Provide one to four numeric release IDs')
+          def read(path):
+              result = subprocess.run(['gh', 'api', path], capture_output=True, text=True, timeout=60)
+              if result.returncode:
+                  return None
+              return json.loads(result.stdout)
+          user = read('user')
+          print('Token account:', user.get('login', 'unknown') if user else 'not available')
+          repo = read('repos/danielifshitz/StickersAI')
+          print('Private source repository readable:', bool(repo and repo.get('private')))
+          print('Reported account push access:', repo.get('permissions', {}).get('push', 'not reported') if repo else 'not available')
+          failed = False
+          for release_id in ids:
+              release = read('repos/danielifshitz/StickersAI/releases/' + release_id)
+              valid = bool(release and release.get('id') == int(release_id) and release.get('draft') is True)
+              print('Expected draft', release_id, 'readable:', valid)
+              failed |= not valid
+          if failed:
+              raise SystemExit('Protected source token cannot read all expected private drafts; signing was not attempted')
+          PY
